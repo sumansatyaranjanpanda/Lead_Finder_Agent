@@ -1,3 +1,8 @@
+# 🚀 Lead Finder Agent — Buyer Discovery (LangGraph + Apify + Streamlit)
+
+## High-Level Architecture & Flow (Visual)
+
+```mermaid
 flowchart TD
   A[User: product and location (Streamlit)] --> B[Company Scraper Agent]
   B --> C[Company List (normalized)]
