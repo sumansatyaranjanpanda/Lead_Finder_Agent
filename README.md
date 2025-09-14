@@ -1,31 +1,24 @@
-# 🚀 Lead Finder Agent — Buyer Discovery (LangGraph + Apify + Streamlit)
+🚀 Lead Finder Agent — Buyer Discovery (LangGraph + Apify + Streamlit)
+AI-powered Buyer Discovery workflow that automatically finds importers, wholesalers, and distributors for any product + location and returns validated leads (company + procurement contacts) as JSON/CSV.Built with LangGraph (multi-agent orchestration), Apify scrapers (Google Places, Google SERP, LinkedIn Profile Scraper), Pydantic schemas, and a Streamlit UI for running & exporting results.
+Problem: Exporters and manufacturers spend huge manual effort finding reliable buyers in target markets.Solution: Automate discovery, enrichment, and validation of B2B leads so sales teams get production-ready contacts fast.
 
-AI-powered Buyer Discovery workflow that automatically finds importers, wholesalers, and distributors for any `product + location` and returns validated leads (company + procurement contacts) as JSON/CSV.  
-Built with **LangGraph** (multi-agent orchestration), **Apify** scrapers (Google Places, Google SERP, LinkedIn Profile Scraper), **Pydantic** schemas, and a **Streamlit** UI for running & exporting results.
+🔖 Table of Contents
 
-**Problem:** Exporters and manufacturers spend huge manual effort finding reliable buyers in target markets.  
-**Solution:** Automate discovery, enrichment, and validation of B2B leads so sales teams get production-ready contacts fast.
+High-Level Architecture & Flow (Visual)  
+Deep Explanation — Each Component  
+Data Model / Schema (Example)  
+How It Works — Step-by-Step Run  
+Install & Run (Copy-Paste)  
+Streamlit UI Usage  
+Troubleshooting & Common Fixes  
+Testing, Deployment & Scaling Notes  
+Security, Costs & Ethics  
+Future Ideas & Roadmap  
+Example Files & Useful Snippets  
+License & Credits
 
----
 
-## 🔖 Table of contents
-1. [High-level architecture & flow (visual)](#high-level-architecture--flow-visual)  
-2. [Deep explanation — each component](#deep-explanation---each-component)  
-3. [Data model / schema (example)](#data-model--schema-example)  
-4. [How it works — step-by-step run](#how-it-works---step-by-step-run)  
-5. [Install & Run (copy-paste)](#install--run-copy-paste)  
-6. [Streamlit UI usage](#streamlit-ui-usage)  
-7. [Troubleshooting & common fixes](#troubleshooting--common-fixes)  
-8. [Testing, deployment & scaling notes](#testing-deployment--scaling-notes)  
-9. [Security, costs & ethics](#security-costs--ethics)  
-10. [Future ideas & roadmap](#future-ideas--roadmap)  
-11. [Example files & useful snippets](#example-files--useful-snippets)  
-12. [License & credits](#license--credits)
-
----
-
-## High-level architecture & flow (visual)
-
+High-Level Architecture & Flow (Visual)
 flowchart TD
   A[User: product and location (Streamlit)] --> B[Company Scraper Agent]
   B --> C[Company List (normalized)]
@@ -47,7 +40,6 @@ flowchart TD
   F -.-> Y
   G -.-> Z
 
-
 sequenceDiagram
   participant User
   participant UI as Streamlit
@@ -68,65 +60,32 @@ sequenceDiagram
   V-->>DB: save validated leads
   UI-->>User: show JSON/CSV and table
 
+Deep Explanation — Each Component
 
-Deep explanation — each component
-1. Entry (Streamlit UI)
+Entry (Streamlit UI)Accepts product and location, a run label, and optional parameters (max companies).Builds an initial BuyerState and invokes the LangGraph pipeline.Shows progress, preview table, JSON, CSV downloads and allows re-runs.
 
-Accepts product and location, a run label, and optional parameters (max companies).
+Company Scraper AgentGoal: produce a clean list of candidate companies (company_name, website, phone, partial address).Preferred sources:  
 
-Builds an initial BuyerState and invokes the LangGraph pipeline.
+Apify Google Places / Google Maps actor – good for local importers/distributors.  
+Apify Alibaba / IndiaMART / Trade portal actors – supplier listings.  
+Apify Google Search actor with domain filters (e.g., site:tradeindia.com) if portal scrapers miss targets.Output: list of CompanyInfo (Pydantic) or plain dicts.
 
-Shows progress, preview table, JSON, CSV downloads and allows re-runs.
 
-2. Company Scraper Agent
+LinkedIn Discovery (Google SERP)Query pattern:Procurement Manager {company_name} {location} site:linkedin.com/in/Use Apify Google SERP Scraper to fetch candidate LinkedIn profile URLs.Filter results: keep those whose title or description mentions the company name (or use fuzzy matching).
 
-Goal: produce a clean list of candidate companies (company_name, website, phone, partial address).
+LinkedIn Profile ScraperFeed found LinkedIn profile URLs into dev_fusion/Linkedin-Profile-Scraper (Apify actor).Actor returns structured profile items: fullName, headline, linkedinUrl, companyName, email (sometimes), location, etc.
 
-Preferred sources:
+Validator AgentMVP logic: keep leads with company.email OR any procurement contact with email OR linkedin.Production improvements:  
 
-Apify Google Places / Google Maps actor – good for local importers/distributors.
-
-Apify Alibaba / IndiaMART / Trade portal actors – supplier listings.
-
-Apify Google Search actor with domain filters (e.g., site:tradeindia.com) if portal scrapers miss targets.
-
-Output: list of CompanyInfo (Pydantic) or plain dicts.
-
-3. LinkedIn Discovery (Google SERP)
-
-Query pattern:
-Procurement Manager {company_name} {location} site:linkedin.com/in/
-
-Use Apify Google SERP Scraper to fetch candidate LinkedIn profile URLs.
-
-Filter results: keep those whose title or description mentions the company name (or use fuzzy matching).
-
-4. LinkedIn Profile Scraper
-
-Feed found LinkedIn profile URLs into dev_fusion/Linkedin-Profile-Scraper (Apify actor).
-
-Actor returns structured profile items: fullName, headline, linkedinUrl, companyName, email (sometimes), location, etc.
-
-5. Validator Agent
-
-MVP logic: keep leads with company.email OR any procurement contact with email OR linkedin.
-
-Production improvements:
-
-Email format validation (EmailStr), deliverability checks (ZeroBounce/Hunter), phone normalization (phonenumbers), fuzzy deduplication (rapidfuzz).
-
+Email format validation (EmailStr), deliverability checks (ZeroBounce/Hunter), phone normalization (phonenumbers), fuzzy deduplication (rapidfuzz).  
 Confidence scoring combining website, email, phone, procurement contact presence.
 
-6. Output Formatter Agent
 
-Standardize final schema and return JSON/CSV.
+Output Formatter AgentStandardize final schema and return JSON/CSV.Optionally persist to DB (Postgres/Mongo) or push to CRM (HubSpot/Salesforce).
 
-Optionally persist to DB (Postgres/Mongo) or push to CRM (HubSpot/Salesforce).
 
-Data model / schema (example)
-
+Data Model / Schema (Example)
 Use Pydantic to validate & serialize:
-
 from pydantic import BaseModel, EmailStr, HttpUrl
 from typing import Optional, List
 
@@ -148,7 +107,7 @@ class BuyerState(BaseModel):
     product: str
     companies: List[CompanyInfo] = []
 
-Example final JSON (single company)
+Example final JSON (single company):
 {
   "company_name": "JPRL GENERAL TRADING LLC",
   "website": null,
@@ -164,37 +123,25 @@ Example final JSON (single company)
   ]
 }
 
-How it works — step-by-step run (what happens when you click Find Buyer)
+How It Works — Step-by-Step Run
 
-Streamlit constructs BuyerState(location="Dubai", product="Rice").
-
-compiled_graph.invoke(...) runs the LangGraph workflow:
-
-company_scraper_agent: calls Apify Google Places actor → collects 5–20 places (company names, phones, websites).
-
-linkedin_contact_agent:
-
-For each company, run Apify Google SERP scraper with Procurement Manager {company} {location} site:linkedin.com/in/.
-
-Filter SERP results for best matches.
-
-Pass top profile URLs to Apify LinkedIn Profile Scraper → get structured contacts.
-
-validator_agent: filter leads with at least one usable contact (email or linkedin).
-
+Streamlit constructs BuyerState(location="Dubai", product="Rice").  
+compiled_graph.invoke(...) runs the LangGraph workflow:  
+company_scraper_agent: calls Apify Google Places actor → collects 5–20 places (company names, phones, websites).  
+linkedin_contact_agent:For each company, run Apify Google SERP scraper with Procurement Manager {company} {location} site:linkedin.com/in/.Filter SERP results for best matches.Pass top profile URLs to Apify LinkedIn Profile Scraper → get structured contacts.  
+validator_agent: filter leads with at least one usable contact (email or linkedin).  
 output_agent: format & return the result.
+
 
 Streamlit receives final state and shows preview table, JSON output, and CSV/JSON downloads.
 
-Install & Run (copy-paste)
-
+Install & Run (Copy-Paste)
 Assumes repo Lead_Finder_Agent with core/ modules (graph, node, schema), app.py (Streamlit), and requirements.txt.
-
-# 1. clone
+# 1. Clone the repo
 git clone https://github.com/your-username/Lead_Finder_Agent.git
 cd Lead_Finder_Agent
 
-# 2. create Python venv (recommended)
+# 2. Create Python venv (recommended)
 python -m venv .venv
 
 # Windows PowerShell activate
@@ -207,18 +154,16 @@ python -m venv .venv
 # conda create -n lead-finder python=3.11 -c conda-forge -y
 # conda activate lead-finder
 
-# 3. install dependencies
+# 3. Install dependencies
 pip install -r requirements.txt
 
-# 4. create .env with APIFY_TOKEN
+# 4. Create .env with APIFY_TOKEN
 echo "APIFY_TOKEN=apify_api_XXXXXXXXXXXX" > .env
 
-# 5. run the Streamlit UI
+# 5. Run the Streamlit UI
 streamlit run app.py
 
-
-requirements.txt (minimal suggestion)
-
+requirements.txt (Minimal Suggestion)
 apify-client
 python-dotenv
 pydantic
@@ -228,126 +173,55 @@ langgraph
 phonenumbers
 rapidfuzz
 
-Streamlit UI usage (brief)
+Streamlit UI Usage
 
-Open http://localhost:8501 (Streamlit will show the URL).
-
-Enter Product and Location (e.g., Rice, Dubai).
-
-Click Find Buyer — wait (Apify runs can take 10–90s depending on actors and counts).
-
+Open http://localhost:8501 (Streamlit will show the URL).  
+Enter Product and Location (e.g., Rice, Dubai).  
+Click "Find Buyer" — wait (Apify runs can take 10–90s depending on actors and counts).  
 Review table and JSON; download CSV/JSON for CRM import.
 
-Troubleshooting & common fixes
+Troubleshooting & Common Fixes
 
-ApifyApiError: User was not found or authentication token is not valid
-→ Ensure APIFY_TOKEN is set in .env and loaded (token starts with apify_api_...).
+ApifyApiError: User was not found or authentication token is not valid→ Ensure APIFY_TOKEN is set in .env and loaded (token starts with apify_api_...).
 
-Input is not valid: Field input.limit must be string
-→ Some Apify actors require string-typed fields: limit = str(10).
+Input is not valid: Field input.limit must be string→ Some Apify actors require string-typed fields: limit = str(10).
 
-Input is not valid: Field input.limit must equal allowed values
-→ Use allowed values (e.g., "10", "20", "30", "40", "50", "100") or map requested values to nearest allowed.
+Input is not valid: Field input.limit must equal allowed values→ Use allowed values (e.g., "10", "20", "30", "40", "50", "100") or map requested values to nearest allowed.
 
-AttributeError: 'CompanyInfo' object has no attribute 'procurement_contacts'
-→ Normalize field names across code. Add a helper as_dict() in the UI to handle Pydantic objects/dicts.
+AttributeError: 'CompanyInfo' object has no attribute 'procurement_contacts'→ Normalize field names across code. Add a helper as_dict() in the UI to handle Pydantic objects/dicts.
 
-Circular import (partially initialized module)
-→ Build graph lazily: expose build_graph() in core.graph and call it at runtime.
+Circular import (partially initialized module)→ Build graph lazily: expose build_graph() in core.graph and call it at runtime.
 
-Slow runs / Apify rate-limits
-→ Cache results, lower maxCrawledPlacesPerSearch, or upgrade Apify plan / use proxies.
+Slow runs / Apify rate-limits→ Cache results, lower maxCrawledPlacesPerSearch, or upgrade Apify plan / use proxies.
 
-LinkedIn scraping returns no email
-→ Many profiles hide email; use company domain + email-finder services (Hunter, ZeroBounce) as fallback.
+LinkedIn scraping returns no email→ Many profiles hide email; use company domain + email-finder services (Hunter, ZeroBounce) as fallback.
 
-Testing, deployment & scaling notes
+
+Testing, Deployment & Scaling Notes
 Testing
 
-Unit-test each agent by mocking Apify responses.
-
-Use fixtures under tests/fixtures/ with sample profile JSON.
-
+Unit-test each agent by mocking Apify responses.  
+Use fixtures under tests/fixtures/ with sample profile JSON.  
 CI (GitHub Actions): mock network calls in tests.
 
-Deployment options
+Deployment Options
 
-Demo: Streamlit Cloud, Heroku (containerized).
-
-Production:
-
-Backend: FastAPI + worker pool (Celery/RQ).
-
-DB: Postgres/Mongo for leads, Redis for caching.
-
+Demo: Streamlit Cloud, Heroku (containerized).  
+Production:  
+Backend: FastAPI + worker pool (Celery/RQ).  
+DB: Postgres/Mongo for leads, Redis for caching.  
 Deploy workers to AWS ECS / GCP Cloud Run with autoscaling.
+
+
 
 Scaling
 
-Submit jobs asynchronously (UI enqueues job, worker executes Apify runs).
-
-Batch and parallelize profile scraping; implement rate limiting and backoff.
-
+Submit jobs asynchronously (UI enqueues job, worker executes Apify runs).  
+Batch and parallelize profile scraping; implement rate limiting and backoff.  
 Cache results and avoid repeated calls for same company.
 
-Security, costs & ethics
+Security, Costs & Ethics
 
-API keys: store in .env, never commit. Use secrets manager in production.
-
-Costs: Apify actors and email verification APIs cost money. Start with free tiers and monitor usage.
-
-Privacy & ToS: Respect terms of service for sources (LinkedIn) and robots.txt. Use data ethically.
-
-GDPR: If storing personal data for EU residents, ensure lawful basis, retention policies, and rights management.
-
-Future ideas & roadmap
-
-Add confidence scoring & human-in-the-loop review (approve/reject).
-
-Integrate email verification APIs to improve lead quality.
-
-Add regional trade data (Panjiva, Trademap) for importer-level accuracy.
-
-Build an exporter dashboard with analytics (conversions, contact success rate).
-
-Integrate with CRMs (HubSpot, Salesforce) to auto-sync validated leads.
-
-Example files & useful snippets
-LangGraph build_graph() minimal pattern
-def build_graph():
-    from core.schema import BuyerState
-    from core.node import company_scraper_agent, linkedin_contact_agent, validator_agent, output_agent
-    graph = StateGraph(BuyerState)
-    # add nodes & edges...
-    return graph.compile()
-
-Normalizing function (in UI)
-def as_dict(obj):
-    if isinstance(obj, dict): return obj
-    if hasattr(obj, "dict"): return obj.dict()
-    if hasattr(obj, "__dict__"): return vars(obj)
-    return {"value": str(obj)}
-
-Example-run (expected timeline)
-
-Submit query → company scraper (5–15s) → SERP & LinkedIn search (10–60s per company) → LinkedIn profile actor (20–90s depending on count) → validation & output.
-
-Typical demo run (5 companies): ~30–90 seconds depending on Apify actor performance.
-
-License & credits
-
-MIT License © 2025 — use, adapt, and contribute.
-Built by you (Lead Finder Agent) — powered by LangGraph, Apify, Pydantic, and Streamlit.
-
-If you want, I can:
-
-add badges (Python, Streamlit, LangGraph, Apify) at the top,
-
-include placeholder screenshots (drop them into /assets/ and I’ll update the README), or
-
-generate a short demo GIF snippet instructions to make the README even more attractive.
-
-::contentReference[oaicite:0]{index=0}
-
-
-
+API keys: Store in .env, never commit. Use secrets manager in production.  
+Costs: Apify actors and email verification APIs cost money. Start with free tiers and monitor usage.  
+Privacy & ToS: Respect terms of service for sources (LinkedIn) and robots.txt. Use data
