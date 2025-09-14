@@ -26,25 +26,27 @@ Built with **LangGraph** (multi-agent orchestration), **Apify** scrapers (Google
 
 ## High-level architecture & flow (visual)
 
-```mermaid
 flowchart TD
-  A[User: product + location (Streamlit)] --> B[LangGraph Entry Node: Company Scraper Agent]
-  B --> C[Company List (raw) → normalize]
-  C --> D[LangGraph Node: LinkedIn Discovery (Google SERP Scraper)]
-  D --> E[LangGraph Node: LinkedIn Profile Scraper (Apify)]
-  E --> F[LangGraph Node: Validator Agent (email/phone/linkedin)]
+  A[User: product and location (Streamlit)] --> B[Company Scraper Agent]
+  B --> C[Company List (normalized)]
+  C --> D[LinkedIn Discovery (Google SERP Scraper)]
+  D --> E[LinkedIn Profile Scraper (Apify)]
+  E --> F[Validator Agent]
   F --> G[Output Formatter Agent]
   G --> H[Streamlit UI / JSON / CSV / DB]
+
   subgraph External_Services
-    X[Apify Actors (Google Places / SERP / LinkedIn Profile Scraper)]
+    X[Apify Actors: Google Places, SERP, LinkedIn Profile Scraper]
     Y[Optional: Email Finder (Hunter / ZeroBounce)]
     Z[Optional DB: Postgres / MongoDB / Vector DB]
   end
+
   B -.-> X
   D -.-> X
   E -.-> X
   F -.-> Y
   G -.-> Z
+
 
 sequenceDiagram
   participant User
@@ -57,14 +59,15 @@ sequenceDiagram
 
   User->>UI: submit(product, location)
   UI->>G: run company search
-  G-->>UI: list of companies (name, phone, website)
+  G-->>UI: list of companies
   UI->>S: search LinkedIn URLs per company
-  S-->>UI: linkedin profile URLs
-  UI->>L: call LinkedInProfileScraper(profileUrls)
-  L-->>UI: profile details (name, headline, email (optional))
+  S-->>UI: LinkedIn profile URLs
+  UI->>L: scrape LinkedIn profiles
+  L-->>UI: profile details
   UI->>V: validate & score leads
   V-->>DB: save validated leads
   UI-->>User: show JSON/CSV and table
+
 
 Deep explanation — each component
 1. Entry (Streamlit UI)
@@ -345,5 +348,6 @@ include placeholder screenshots (drop them into /assets/ and I’ll update the R
 generate a short demo GIF snippet instructions to make the README even more attractive.
 
 ::contentReference[oaicite:0]{index=0}
+
 
 
