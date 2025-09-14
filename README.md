@@ -8,6 +8,9 @@ Built with **LangGraph** (multi-agent orchestration), **Apify** scrapers (Google
 
 ---
 
+
+
+
 ## 🔖 Table of contents
 1. [High-level architecture & flow (visual)](#high-level-architecture--flow-visual)  
 2. [Deep explanation — each component](#deep-explanation---each-component)  
@@ -137,6 +140,7 @@ Built by you — powered by LangGraph, Apify, Pydantic, and Streamlit.
 ✅ This version is **ready to paste into your README.md** — diagrams will render properly on GitHub.  
 
 Do you also want me to add **GitHub shields/badges** (Python, Streamlit, LangGraph, Apify) at the top so it looks even more professional?
+
 
 
 
