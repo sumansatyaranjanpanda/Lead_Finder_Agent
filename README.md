@@ -30,6 +30,57 @@ Built with **LangGraph** (multi-agent orchestration), **Apify** scrapers (Google
 
 ## High-Level Architecture & Flow (Text Description)
 
+
+
+flowchart TD
+  A[User: product and location (Streamlit)] --> B[Company Scraper Agent]
+  B --> C[Company List (normalized)]
+  C --> D[LinkedIn Discovery (Google SERP Scraper)]
+  D --> E[LinkedIn Profile Scraper (Apify)]
+  E --> F[Validator Agent]
+  F --> G[Output Formatter Agent]
+  G --> H[Streamlit UI / JSON / CSV / DB]
+
+  subgraph External_Services
+    X[Apify Actors: Google Places, SERP, LinkedIn Profile Scraper]
+    Y[Optional: Email Finder (Hunter / ZeroBounce)]
+    Z[Optional DB: Postgres / MongoDB / Vector DB]
+  end
+
+  B -.-> X
+  D -.-> X
+  E -.-> X
+  F -.-> Y
+  G -.-> Z
+
+
+
+
+
+sequenceDiagram
+  participant User
+  participant UI as Streamlit
+  participant G as CompanyScraper
+  participant S as GoogleSERP
+  participant L as LinkedInProfileScraper
+  participant V as Validator
+  participant DB as Storage
+
+  User->>UI: submit(product, location)
+  UI->>G: run company search
+  G-->>UI: list of companies
+  UI->>S: search LinkedIn URLs per company
+  S-->>UI: LinkedIn profile URLs
+  UI->>L: scrape LinkedIn profiles
+  L-->>UI: profile details
+  UI->>V: validate & score leads
+  V-->>DB: save validated leads
+  UI-->>User: show JSON/CSV and table
+
+
+
+  
+
 The workflow processes user input (product and location via Streamlit) through a series of agents and external services:
 - **User Input** → **Company Scraper Agent** → **Company List (normalized)** → **LinkedIn Discovery (Google SERP Scraper)** → **LinkedIn Profile Scraper (Apify)** → **Validator Agent** → **Output Formatter Agent** → **Streamlit UI / JSON / CSV / DB**.
 - **External Services** include Apify Actors (Google Places, SERP, LinkedIn Profile Scraper), optional Email Finder (Hunter/ZeroBounce), and optional databases (Postgres/MongoDB/Vector DB).
@@ -71,29 +122,7 @@ The workflow processes user input (product and location via Streamlit) through a
 
 ## Data Model / Schema (Example)
 
-Use Pydantic to validate & serialize:
 
-```python
-from pydantic import BaseModel, EmailStr, HttpUrl
-from typing import Optional, List
-
-class ProcurementContact(BaseModel):
-    name: Optional[str]
-    designation: Optional[str]
-    email: Optional[EmailStr]
-    linkedin: Optional[HttpUrl]
-
-class CompanyInfo(BaseModel):
-    company_name: str
-    website: Optional[HttpUrl]
-    email: Optional[EmailStr]
-    phone: Optional[str]
-    procurement_contacts: List[ProcurementContact] = []
-
-class BuyerState(BaseModel):
-    location: str
-    product: str
-    companies: List[CompanyInfo] = []
 
 
 {
@@ -110,6 +139,7 @@ class BuyerState(BaseModel):
     }
   ]
 }
+  
 
 How It Works — Step-by-Step Run
 
@@ -253,17 +283,4 @@ If you want, I can:
 Add badges (Python, Streamlit, LangGraph, Apify) at the top,
 Include placeholder screenshots (drop them into /assets/ and I’ll update the README), or
 Generate a short demo GIF snippet instructions to make the README even more attractive.
-
-text### Instructions
-1. **Replace Content**: Open your `README.md` file in your repository and replace its entire content with the text above.
-2. **Commit and Push**:
-   ```bash
-   git add README.md
-   git commit -m "Update README.md with text-based architecture"
-   git push origin main
-
-Verify: Refresh your GitHub repository page. The content should now render correctly without any diagram-related errors.
-
-This version avoids Mermaid syntax entirely, using plain text to describe the architecture and flow, which should resolve the rendering issues. Let me know if you encounter any further problems!3.6sFast
-
-
+    
