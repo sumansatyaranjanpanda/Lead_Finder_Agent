@@ -5,6 +5,7 @@ Built with **LangGraph** (multi-agent orchestration), **Apify** scrapers (Google
 
 **Problem:** Exporters and manufacturers spend huge manual effort finding reliable buyers in target markets.  
 **Solution:** Automate discovery, enrichment, and validation of B2B leads so sales teams get production-ready contacts fast.
+<img width="173" height="531" alt="graph" src="https://github.com/user-attachments/assets/13b9c619-9255-4e49-93ce-29e821cc62e2" />
 
 ---
 
@@ -261,3 +262,4 @@ text### Instructions
 Verify: Refresh your GitHub repository page. The content should now render correctly without any diagram-related errors.
 
 This version avoids Mermaid syntax entirely, using plain text to describe the architecture and flow, which should resolve the rendering issues. Let me know if you encounter any further problems!3.6sFast
+
