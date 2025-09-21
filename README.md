@@ -1,7 +1,7 @@
 # 🚀 Lead Finder Agent — Buyer Discovery (LangGraph + Apify + Streamlit)
 
 AI-powered Buyer Discovery workflow that automatically finds importers, wholesalers, and distributors for any `product + location` and returns validated leads (company + procurement contacts) as JSON/CSV.  
-Built with **LangGraph** (multi-agent orchestration), **Apify** scrapers (Google Places, Google SERP, LinkedIn Profile Scraper), **Pydantic** schemas, and a **Streamlit** UI for running & exporting results.
+Built with **LangGraph** (multi-agent orchestration), **Apify** scrapers (Google Places, Google SERP, LinkedIn Profile Scraper), **Pydantic** schemas, and a **Streamlit**/**Gradio" UI for running & exporting results.
 
 **Problem:** Exporters and manufacturers spend huge manual effort finding reliable buyers in target markets.  
 **Solution:** Automate discovery, enrichment, and validation of B2B leads so sales teams get production-ready contacts fast.
@@ -140,6 +140,7 @@ Built by you — powered by LangGraph, Apify, Pydantic, and Streamlit.
 ✅ This version is **ready to paste into your README.md** — diagrams will render properly on GitHub.  
 
 Do you also want me to add **GitHub shields/badges** (Python, Streamlit, LangGraph, Apify) at the top so it looks even more professional?
+
 
 
 
